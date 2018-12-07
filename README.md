@@ -12,7 +12,8 @@ Easy way to track video quartiles
 
 ## API
 
-### var qt = new QuartileTracker(video, trackers)
+new QuartileTracker(video, trackers)
+
 
 ### video   
 **Type**: _Object_   
