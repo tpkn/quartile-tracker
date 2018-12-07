@@ -12,9 +12,7 @@ Easy way to track video quartiles
 
 ## API
 
-```javascript
 ### var qt = new QuartileTracker(video, trackers)
-```
 
 ### video   
 **Type**: _Object_   
@@ -46,14 +44,14 @@ Show/hide events log
 ## Usage
 ```javascript
 function someCallback(){
-	console.log('yey!');
+   console.log('yey!');
 }
 
 var video = document.getElementById('video');
 var trackers = [
-	{ time: '1s', callback: someCallback },
-	{ time: '25%', pixel: 'https://localhost/pixel1.gif' },
-	{ time: 10, pixel: 'https://localhost/pixel2.gif' },
+   { time: '1s', callback: someCallback },
+   { time: '25%', pixel: 'https://localhost/pixel1.gif' },
+   { time: 10, pixel: 'https://localhost/pixel2.gif' },
 ];
 
 var qt = new QuartileTracker(video, trackers);
