@@ -37,6 +37,10 @@ function QuartileTracker(video, trackers) {
       
       for (let i = 0, len = trackers.length; i < len; i++) {
          tracker = trackers[i];
+         if (!tracker.active) {
+            continue
+         }
+
          time = tracker.time;
          
          // Check if the time is specified as a percentage
@@ -46,7 +50,7 @@ function QuartileTracker(video, trackers) {
             compare_time = current_time;
          }
          
-         if (compare_time >= parseInt(time) && tracker.active) {
+         if (compare_time >= parseInt(time)) {
             
             pixel = tracker.pixel;
             if (typeof pixel !== 'undefined') {
