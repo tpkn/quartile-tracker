@@ -1,7 +1,7 @@
 /*
  * Quartile Tracker, http://tpkn.me/
  */
-function QuartileTracker(video, trackers) {
+function QuartileTracker(video, trackers, options = {}) {
    if (!(video instanceof Element)) {
       throw new TypeError('Expected a DOM element');
    }
@@ -9,13 +9,15 @@ function QuartileTracker(video, trackers) {
       throw new TypeError('Expected an Object');
    }
    
+   let {
+      auto_reset = true
+   } = options;
+   
    let duration = 0;
    let current_time = 0;
    let compare_time = 0;
-   let tracker, time, pixel, callback;
-   
-   let auto_reset = true;
    let debug_mode = false;
+   let tracker, time, pixel, callback;
    
    // Fix 'onended' event issue when 'loop = true'
    let looped = video.loop;
@@ -40,8 +42,8 @@ function QuartileTracker(video, trackers) {
          if (!tracker.active) {
             continue
          }
-
-         time = tracker.time;
+         
+         ({ time, pixel, callback } = tracker);
          
          // Check if the time is specified as a percentage
          if (typeof time === 'string' && time.indexOf('%') === time.length - 1) {
@@ -51,14 +53,11 @@ function QuartileTracker(video, trackers) {
          }
          
          if (compare_time >= parseInt(time)) {
-            
-            pixel = tracker.pixel;
             if (typeof pixel !== 'undefined') {
                callPixel(pixel);
             }
             
-            callback = tracker.callback;
-            if (typeof callback == 'function') {
+            if (typeof callback === 'function') {
                callback();
             }
             
@@ -103,7 +102,7 @@ function QuartileTracker(video, trackers) {
       for (let i = 0, len = trackers.length; i < len; i++) {
          trackers[i].active = true;
       }
-      trace('- reset -');
+      trace('- QT reset -');
    }
    
    /**
@@ -112,7 +111,7 @@ function QuartileTracker(video, trackers) {
    function destroy() {
       video.removeEventListener('timeupdate', onUpdate);
       video.removeEventListener('ended', onEnded);
-      trace('- destroy -');
+      trace('- QT destroy -');
    }
    
    /**

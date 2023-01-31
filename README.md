@@ -1,18 +1,13 @@
 # Quartile Tracker
 Easy way to track video quartiles
 
-
-
-## Installation
-```html
-<script type="text/javascript" src="quartile-tracker.min.js"></script>
-```
-
-
+ 
 
 ## API
 
-new QuartileTracker(video, trackers)
+```text
+new QuartileTracker(video, trackers[, options])
+```
 
 
 ### video   
@@ -21,24 +16,42 @@ new QuartileTracker(video, trackers)
 
 ### trackers
 **Type**: _Array_   
+
+Array of trackers with following options:
 - `time` _Number | String_ Can be a seconds or percent
 - `pixel` _String_ This link would be called when `time` has come
 - `callback` _Function_ Also you can call some callback function
 
 
-### qt.reset()
-**Type**: _Function_   
-Reenable all trackers
+### options
+**Type**: _Object_   
 
 
-### qt.destroy()
-**Type**: _Function_   
-Remove all listeners and stop tracking
+### options.auto_rest
+**Type**: _Boolean_   
+**Default**: `true`   
+
+Reenable all trackers after end of videos
 
 
-### qt.debug()
-**Type**: _Function_   
-Show/hide events log
+
+
+## Methods
+
+
+### reset()
+
+Reenables all trackers
+
+
+### debug()
+
+Turns on/off events log
+
+
+
+### destroy()
+
 
 
 
@@ -50,7 +63,9 @@ function someCallback(){
 
 var video = document.getElementById('video');
 var trackers = [
-   { time: '1s', callback: someCallback },
+   { time: '1s', callback: () => {
+      console.log('1s callback');
+   }},
    { time: '25%', pixel: 'https://localhost/pixel1.gif' },
    { time: 10, pixel: 'https://localhost/pixel2.gif' },
 ];
