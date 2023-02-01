@@ -57,12 +57,8 @@ Turns on/off events log
 
 ## Usage
 ```javascript
-function someCallback(){
-   console.log('yey!');
-}
-
-var video = document.getElementById('video');
-var trackers = [
+let video = document.getElementById('video');
+let trackers = [
    { time: '1s', callback: () => {
       console.log('1s callback');
    }},
@@ -70,7 +66,7 @@ var trackers = [
    { time: 10, pixel: 'https://localhost/pixel2.gif' },
 ];
 
-var qt = new QuartileTracker(video, trackers);
+let qt = new QuartileTracker(video, trackers);
 qt.debug();
 ```
 
