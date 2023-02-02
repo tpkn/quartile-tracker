@@ -34,6 +34,13 @@ Array of trackers with following options:
 Reenable all trackers after end of videos
 
 
+### options.verbose
+**Type**: _Boolean_   
+**Default**: `false`   
+
+Turns on/off events trace
+
+
 
 
 ## Methods
@@ -42,11 +49,6 @@ Reenable all trackers after end of videos
 ### reset()
 
 Reenables all trackers
-
-
-### debug()
-
-Turns on/off events log
 
 
 
@@ -66,10 +68,14 @@ let trackers = [
    { time: 10, pixel: 'https://localhost/pixel2.gif' },
 ];
 
-let qt = new QuartileTracker(video, trackers);
-qt.debug();
+let qt = new QuartileTracker(video, trackers, { verbose: true });
 ```
 
+
+
+## Changelog 
+#### 2023-02-02:
+- A few small optimizations...
 
 
 

@@ -10,14 +10,13 @@ function QuartileTracker(video, trackers, options = {}) {
    }
    
    let {
-      auto_reset = true
+      auto_reset = true,
+      verbose = false
    } = options;
    
    let duration = 0;
    let current_time = 0;
    let compare_time = 0;
-   let debug_mode = false;
-   let tracker, time, pixel, callback;
    
    // Fix 'onended' event issue when 'loop = true'
    let looped = video.loop;
@@ -25,46 +24,75 @@ function QuartileTracker(video, trackers, options = {}) {
       video.loop = false;
    }
    
-   // Add 'active' prop to each tracker
-   reset();
+   // Validate and prepare 'optimized' trackers config
+   let config = [];
+   for (let i = 0, len = trackers.length; i < len; i++) {
+      let tracker = Object.assign({}, trackers[i]);
+      if (!tracker.hasOwnProperty('time')) {
+         throw new Error('[QT] tracker #' + (i + 1) + ' does not have the \'time\' property set!');
+      }
+      if (!tracker.hasOwnProperty('pixel') && !tracker.hasOwnProperty('callback')) {
+         throw new Error('[QT] tracker #' + (i + 1) + ' does not have neither \'pixel\' nor \'callback\' property set!');
+      }
+      
+      let { time, pixel, callback } = tracker;
+      
+      // Pre-parse possible stringified time and check if its valid number
+      let parsed_time = parseFloat(time);
+      if (isNaN(parsed_time) || parsed_time < 0) {
+         throw new Error('[QT] tracker #' + (i + 1) + ' has invalid time format: unparsable number or it\'s less than 0!');
+      }
+      
+      // Pre-define some flags to avoid unnecessary computations in each call of 'timeupdate' event
+      if (typeof time === 'string' && time.indexOf('%') === time.length - 1) {
+         tracker.in_percent = true;
+      }
+      if (typeof pixel === 'string') {
+         tracker.has_pixel = true;
+      }
+      if (typeof callback === 'function') {
+         tracker.has_callback = true;
+      }
+      
+      tracker.time = parsed_time;
+      
+      config.push(tracker);
+   }
    
    video.addEventListener('timeupdate', onUpdate);
    video.addEventListener('ended', onEnded);
    
    function onUpdate() {
-      duration = video.duration || 0;
-      current_time = video.currentTime || 0;
+      duration = video.duration;
+      current_time = video.currentTime;
       
-      trace('time:', current_time + 's');
-      
-      for (let i = 0, len = trackers.length; i < len; i++) {
-         tracker = trackers[i];
-         if (!tracker.active) {
+      for (let i = 0, len = config.length; i < len; i++) {
+         let tracker = config[i];
+         if (tracker.active === false) {
             continue
          }
          
-         ({ time, pixel, callback } = tracker);
+         let { time, in_percent, has_pixel, pixel, has_callback, callback } = tracker;
          
          // Check if the time is specified as a percentage
-         if (typeof time === 'string' && time.indexOf('%') === time.length - 1) {
+         if (in_percent === true && duration > 0) {
             compare_time = current_time / duration * 100;
          } else {
             compare_time = current_time;
          }
          
-         if (compare_time >= parseInt(time)) {
-            if (typeof pixel !== 'undefined') {
+         if (compare_time >= time) {
+            if (has_pixel === true) {
                callPixel(pixel);
             }
-            
-            if (typeof callback === 'function') {
+            if (has_callback === true) {
                callback();
             }
             
             // Disable used tracker
             tracker.active = false;
             
-            trace('tracker (', time, '):', pixel);
+            trace('tracker (' + (time + (in_percent ? '%' : 'sec')) + '):', pixel);
          }
       }
    }
@@ -83,13 +111,11 @@ function QuartileTracker(video, trackers, options = {}) {
    
    /**
     * Call tracking pixel
-    *
     * @param   {String}  link
     */
    function callPixel(link) {
       let image = new Image();
       image.src = link;
-      // Delete the image after the pixel has been called
       image.onload = image.onerror = function() {
          image = null;
       };
@@ -99,10 +125,10 @@ function QuartileTracker(video, trackers, options = {}) {
     * Reset tracking flags
     */
    function reset() {
-      for (let i = 0, len = trackers.length; i < len; i++) {
-         trackers[i].active = true;
+      for (let i = 0, len = config.length; i < len; i++) {
+         config[i].active = true;
       }
-      trace('- QT reset -');
+      trace('all trackers are reset');
    }
    
    /**
@@ -111,29 +137,20 @@ function QuartileTracker(video, trackers, options = {}) {
    function destroy() {
       video.removeEventListener('timeupdate', onUpdate);
       video.removeEventListener('ended', onEnded);
-      trace('- QT destroy -');
-   }
-   
-   /**
-    * Show/hide events log
-    */
-   function debug() {
-      debug_mode = !debug_mode;
-      trace('debug:', debug_mode ? 'on' : 'off');
+      trace('destroyed');
    }
    
    /**
     * Console.log wrapper
     */
    function trace() {
-      if (debug_mode) {
-         console.log(Object.values(arguments).join(' '));
+      if (verbose) {
+         console.log('[QT]', Object.values(arguments).join(' '));
       }
    }
    
-   return { reset, destroy, debug };
+   return { reset, destroy };
 }
-
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
    module.exports = QuartileTracker;
