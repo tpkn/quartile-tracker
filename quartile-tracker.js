@@ -10,6 +10,7 @@ function QuartileTracker(video, trackers, options = {}) {
    }
    
    let {
+      treshold = 1,
       auto_reset = true,
       verbose = false
    } = options;
@@ -44,26 +45,23 @@ function QuartileTracker(video, trackers, options = {}) {
       }
       
       // Pre-define some flags to avoid unnecessary computations in each call of 'timeupdate' event
-      if (typeof time === 'string' && time.indexOf('%') === time.length - 1) {
-         tracker.in_percent = true;
-      }
-      if (typeof pixel === 'string') {
-         tracker.has_pixel = true;
-      }
-      if (typeof callback === 'function') {
-         tracker.has_callback = true;
-      }
-      
+      tracker.in_percent = (typeof time === 'string' && time.indexOf('%') === time.length - 1);
+      tracker.has_pixel = (typeof pixel === 'string');
+      tracker.has_callback = (typeof callback === 'function');
       tracker.time = parsed_time;
       
       config.push(tracker);
    }
    
+   video.addEventListener('loadedmetadata', onMetaData);
    video.addEventListener('timeupdate', onUpdate);
    video.addEventListener('ended', onEnded);
    
-   function onUpdate() {
+   function onMetaData() {
       duration = video.duration;
+   }
+   
+   function onUpdate() {
       current_time = video.currentTime;
       
       for (let i = 0, len = config.length; i < len; i++) {
@@ -72,20 +70,26 @@ function QuartileTracker(video, trackers, options = {}) {
             continue
          }
          
-         let { time, in_percent, has_pixel, pixel, has_callback, callback } = tracker;
+         let {
+            time, pixel, callback,
+            in_percent, has_pixel, has_callback
+         } = tracker;
          
          // Check if the time is specified as a percentage
-         if (in_percent === true && duration > 0) {
+         if (in_percent && duration > 0) {
             compare_time = current_time / duration * 100;
          } else {
             compare_time = current_time;
          }
          
-         if (compare_time >= time) {
-            if (has_pixel === true) {
+         if (
+            (treshold <= 0 && compare_time >= time) ||
+            (treshold > 0 && compare_time >= time && compare_time <= (time + (in_percent ? treshold * 100 / duration : treshold)))
+         ) {
+            if (has_pixel) {
                callPixel(pixel);
             }
-            if (has_callback === true) {
+            if (has_callback) {
                callback();
             }
             
@@ -135,6 +139,7 @@ function QuartileTracker(video, trackers, options = {}) {
     * Stop tracking once and for all
     */
    function destroy() {
+      video.removeEventListener('loadedmetadata', onMetaData);
       video.removeEventListener('timeupdate', onUpdate);
       video.removeEventListener('ended', onEnded);
       trace('destroyed');
