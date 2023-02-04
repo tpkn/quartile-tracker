@@ -53,15 +53,11 @@ function QuartileTracker(video, trackers, options = {}) {
       config.push(tracker);
    }
    
-   video.addEventListener('loadedmetadata', onMetaData);
    video.addEventListener('timeupdate', onUpdate);
    video.addEventListener('ended', onEnded);
    
-   function onMetaData() {
-      duration = video.duration;
-   }
-   
    function onUpdate() {
+      duration = video.duration;
       current_time = video.currentTime;
       
       for (let i = 0, len = config.length; i < len; i++) {
@@ -139,7 +135,6 @@ function QuartileTracker(video, trackers, options = {}) {
     * Stop tracking once and for all
     */
    function destroy() {
-      video.removeEventListener('loadedmetadata', onMetaData);
       video.removeEventListener('timeupdate', onUpdate);
       video.removeEventListener('ended', onEnded);
       trace('destroyed');
