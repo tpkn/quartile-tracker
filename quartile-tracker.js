@@ -10,7 +10,7 @@ function QuartileTracker(video, trackers, options = {}) {
    }
    
    let {
-      treshold = 1,
+      threshold = 1,
       auto_reset = true,
       verbose = false
    } = options;
@@ -79,8 +79,8 @@ function QuartileTracker(video, trackers, options = {}) {
          }
          
          if (
-            (treshold <= 0 && compare_time >= time) ||
-            (treshold > 0 && compare_time >= time && compare_time <= (time + (in_percent ? treshold * 100 / duration : treshold)))
+            (threshold <= 0 && compare_time >= time) ||
+            (threshold > 0 && compare_time >= time && compare_time <= (time + (in_percent ? threshold * 100 / duration : threshold)))
          ) {
             if (has_pixel) {
                callPixel(pixel);
